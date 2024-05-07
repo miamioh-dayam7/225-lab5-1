@@ -12,84 +12,125 @@ pipeline {
     stages {
         stage('Code Checkout') {
             steps {
-                try {
-                    cleanWs()
-                    checkout([$class: 'GitSCM', branches: [[name: '*/main']],
-                              userRemoteConfigs: [[url: "${GITHUB_URL}"]]])
-                } catch (Exception e) {
-                    currentBuild.result = 'FAILURE'
-                    error("Failed to checkout code: ${e.message}")
+                script {
+                    try {
+                        cleanWs()
+                        checkout([$class: 'GitSCM', branches: [[name: '*/main']],
+                                  userRemoteConfigs: [[url: "${GITHUB_URL}"]]])
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to checkout code: ${e.message}")
+                    }
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                try {
-                    script {
+                script {
+                    try {
                         docker.build("${DOCKER_IMAGE}:${IMAGE_TAG}", "-f Dockerfile.build .")
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to build Docker image: ${e.message}")
                     }
-                } catch (Exception e) {
-                    currentBuild.result = 'FAILURE'
-                    error("Failed to build Docker image: ${e.message}")
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                try {
-                    script {
+                script {
+                    try {
                         docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
                             docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
                         }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to push Docker image: ${e.message}")
                     }
-                } catch (Exception e) {
-                    currentBuild.result = 'FAILURE'
-                    error("Failed to push Docker image: ${e.message}")
                 }
             }
         }
 
         stage('Deploy to Dev Environment') {
             steps {
-                try {
-                    script {
+                script {
+                    try {
                         // This sets up the Kubernetes configuration using the specified KUBECONFIG
                         def kubeConfig = readFile(KUBECONFIG)
                         // This updates the deployment-dev.yaml to use the new image tag
                         sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|' deployment-dev.yaml"
                         sh "kubectl apply -f deployment-dev.yaml"
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to deploy to Dev environment: ${e.message}")
                     }
-                } catch (Exception e) {
-                    currentBuild.result = 'FAILURE'
-                    error("Failed to deploy to Dev environment: ${e.message}")
                 }
             }
         }
 
         stage('Generate Test Data') {
             steps {
-                try {
-                    script {
+                script {
+                    try {
                         // Ensure the label accurately targets the correct pods.
                         def appPod = sh(script: "kubectl get pods -l app=flask -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
                         // Execute command within the pod. 
                         sh "kubectl get pods"
                         sh "sleep 5"
                         sh "kubectl exec ${appPod} -- python3 data-gen.py"
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to generate test data: ${e.message}")
                     }
-                } catch (Exception e) {
-                    currentBuild.result = 'FAILURE'
-                    error("Failed to generate test data: ${e.message}")
                 }
             }
         }
 
-        // Remaining stages with similar error handling...
+        stage("Run Acceptance Tests") {
+            steps {
+                script {
+                    try {
+                        sh 'docker stop qa-tests || true'
+                        sh 'docker rm qa-tests || true'
+                        sh 'docker build -t qa-tests -f Dockerfile.test .'
+                        sh 'docker run qa-tests'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to run acceptance tests: ${e.message}")
+                    }
+                }
+            }
+        }
         
-        // Run Acceptance Tests, Remove Test Data, Check Kubernetes Cluster, etc.
-
+        stage('Remove Test Data') {
+            steps {
+                script {
+                    try {
+                        // Run the python script to generate data to add to the database
+                        def appPod = sh(script: "kubectl get pods -l app=flask -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
+                        sh "kubectl exec ${appPod} -- python3 data-clear.py"
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to remove test data: ${e.message}")
+                    }
+                }
+            }
+        }
+         
+        stage('Check Kubernetes Cluster') {
+            steps {
+                script {
+                    try {
+                        sh "kubectl get all"
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to check Kubernetes cluster: ${e.message}")
+                    }
+                }
+            }
+        }
     }
 
     post {
@@ -104,4 +145,3 @@ pipeline {
         }
     }
 }
-
