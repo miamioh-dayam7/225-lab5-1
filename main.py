@@ -19,7 +19,6 @@ def init_db():
             CREATE TABLE IF NOT EXISTS contacts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                email TEXT NOT NULL,  
                 phone TEXT NOT NULL
             );
         ''')
@@ -38,15 +37,14 @@ def index():
             message = 'Contact deleted successfully.'
         else:
             name = request.form.get('name')
-            email = request.form.get('email')  # Retrieve email from form
             phone = request.form.get('phone')
-            if name and email and phone:  # Check if all fields are provided
+            if name and phone:
                 db = get_db()
-                db.execute('INSERT INTO contacts (name, email, phone) VALUES (?, ?, ?)', (name, email, phone))
+                db.execute('INSERT INTO contacts (name, phone) VALUES (?, ?)', (name, phone))
                 db.commit()
                 message = 'Contact added successfully.'
             else:
-                message = 'Missing name, email, or phone number.'
+                message = 'Missing name or phone number.'
 
     # Always display the contacts table
     db = get_db()
@@ -57,15 +55,14 @@ def index():
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Contacts</title>
+            <title>Andy Day Final</title>
         </head>
         <body>
             <h2>Add Contact</h2>
+            <h4>Please?</h4>
             <form method="POST" action="/">
                 <label for="name">Name:</label><br>
                 <input type="text" id="name" name="name" required><br>
-                <label for="email">Email Address:</label><br> 
-                <input type="text" id="email" name="email" required><br> 
                 <label for="phone">Phone Number:</label><br>
                 <input type="text" id="phone" name="phone" required><br><br>
                 <input type="submit" value="Submit">
@@ -75,14 +72,12 @@ def index():
                 <table border="1">
                     <tr>
                         <th>Name</th>
-                        <th>Email</th> <!-- Added email table header -->
                         <th>Phone Number</th>
                         <th>Delete</th>
                     </tr>
                     {% for contact in contacts %}
                         <tr>
                             <td>{{ contact['name'] }}</td>
-                            <td>{{ contact['email'] }}</td> <!-- Added email table data -->
                             <td>{{ contact['phone'] }}</td>
                             <td>
                                 <form method="POST" action="/">
