@@ -19,7 +19,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS contacts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                email TEXT NOT NULL,  -- Added email field
+                email TEXT NOT NULL,  
                 phone TEXT NOT NULL
             );
         ''')
@@ -64,8 +64,8 @@ def index():
             <form method="POST" action="/">
                 <label for="name">Name:</label><br>
                 <input type="text" id="name" name="name" required><br>
-                <label for="email">Email Address:</label><br> <!-- Added email input field -->
-                <input type="email" id="email" name="email" required><br> <!-- Added email input field -->
+                <label for="email">Email Address:</label><br> 
+                <input type="text" id="email" name="email" required><br> 
                 <label for="phone">Phone Number:</label><br>
                 <input type="text" id="phone" name="phone" required><br><br>
                 <input type="submit" value="Submit">
