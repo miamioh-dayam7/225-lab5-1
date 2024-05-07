@@ -55,13 +55,15 @@ def index():
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Contacts</title>
+            <title>Andy Day Final</title>
         </head>
         <body>
-            <h2>Add Contact</h2>
+            <h2>Add Contact and Email</h2>
             <form method="POST" action="/">
                 <label for="name">Name:</label><br>
                 <input type="text" id="name" name="name" required><br>
+                <label for="email">Email Address:</label><br>
+                <input type="text" id="email" name="email" required><br>
                 <label for="phone">Phone Number:</label><br>
                 <input type="text" id="phone" name="phone" required><br><br>
                 <input type="submit" value="Submit">
