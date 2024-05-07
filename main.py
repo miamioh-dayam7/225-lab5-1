@@ -63,7 +63,7 @@ def index():
         <label for="name">Name:</label><br>
         <input type="text" id="name" name="name" required><br>
         <label for="email">Email Address:</label><br> <!-- Added email input field -->
-        <input type="text" id="email" name="email" required><br> <!-- Added email input field -->
+        <input type="email" id="email" name="email" required><br> <!-- Added email input field -->
         <label for="phone">Phone Number:</label><br>
         <input type="text" id="phone" name="phone" required><br><br>
         <input type="submit" value="Submit">
