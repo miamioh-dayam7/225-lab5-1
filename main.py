@@ -53,46 +53,50 @@ def index():
     # Display the HTML form along with the contacts table
     return render_template_string('''
         <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Contacts</title>
-        </head>
-        <body>
-            <h2>Add Contact</h2>
-            <form method="POST" action="/">
-                <label for="name">Name:</label><br>
-                <input type="text" id="name" name="name" required><br>
-                <label for="phone">Phone Number:</label><br>
-                <input type="text" id="phone" name="phone" required><br><br>
-                <input type="submit" value="Submit">
-            </form>
-            <p>{{ message }}</p>
-            {% if contacts %}
-                <table border="1">
-                    <tr>
-                        <th>Name</th>
-                        <th>Phone Number</th>
-                        <th>Delete</th>
-                    </tr>
-                    {% for contact in contacts %}
-                        <tr>
-                            <td>{{ contact['name'] }}</td>
-                            <td>{{ contact['phone'] }}</td>
-                            <td>
-                                <form method="POST" action="/">
-                                    <input type="hidden" name="contact_id" value="{{ contact['id'] }}">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="submit" value="Delete">
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% else %}
-                <p>No contacts found.</p>
-            {% endif %}
-        </body>
-        </html>
+<html>
+<head>
+    <title>Contacts</title>
+</head>
+<body>
+    <h2>Add Contact</h2>
+    <form method="POST" action="/">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <label for="email">Email Address:</label><br> <!-- Added email input field -->
+        <input type="text" id="email" name="email" required><br> <!-- Added email input field -->
+        <label for="phone">Phone Number:</label><br>
+        <input type="text" id="phone" name="phone" required><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <p>{{ message }}</p>
+    {% if contacts %}
+        <table border="1">
+            <tr>
+                <th>Name</th>
+                <th>Email</th> <!-- Added email table header -->
+                <th>Phone Number</th>
+                <th>Delete</th>
+            </tr>
+            {% for contact in contacts %}
+                <tr>
+                    <td>{{ contact['name'] }}</td>
+                    <td>{{ contact['email'] }}</td> <!-- Added email table data -->
+                    <td>{{ contact['phone'] }}</td>
+                    <td>
+                        <form method="POST" action="/">
+                            <input type="hidden" name="contact_id" value="{{ contact['id'] }}">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No contacts found.</p>
+    {% endif %}
+</body>
+</html>
     ''', message=message, contacts=contacts)
 
 if __name__ == "__main__":
