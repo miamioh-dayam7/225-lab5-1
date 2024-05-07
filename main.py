@@ -56,6 +56,11 @@ def index():
         <html>
         <head>
             <title>Andy Day Final</title>
+            <script>
+            window.onload = function() {
+                alert("Welcome to our website!");
+            };
+            </script>
         </head>
         <body>
             <h2>Add Contact</h2>
