@@ -19,6 +19,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS contacts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
+                email TEXT NOT NULL,  -- Added email field
                 phone TEXT NOT NULL
             );
         ''')
@@ -37,14 +38,15 @@ def index():
             message = 'Contact deleted successfully.'
         else:
             name = request.form.get('name')
+            email = request.form.get('email')  # Retrieve email from form
             phone = request.form.get('phone')
-            if name and phone:
+            if name and email and phone:  # Check if all fields are provided
                 db = get_db()
-                db.execute('INSERT INTO contacts (name, phone) VALUES (?, ?)', (name, phone))
+                db.execute('INSERT INTO contacts (name, email, phone) VALUES (?, ?, ?)', (name, email, phone))
                 db.commit()
                 message = 'Contact added successfully.'
             else:
-                message = 'Missing name or phone number.'
+                message = 'Missing name, email, or phone number.'
 
     # Always display the contacts table
     db = get_db()
@@ -53,50 +55,50 @@ def index():
     # Display the HTML form along with the contacts table
     return render_template_string('''
         <!DOCTYPE html>
-<html>
-<head>
-    <title>Contacts</title>
-</head>
-<body>
-    <h2>Add Contact</h2>
-    <form method="POST" action="/">
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br>
-        <label for="email">Email Address:</label><br> <!-- Added email input field -->
-        <input type="email" id="email" name="email" required><br> <!-- Added email input field -->
-        <label for="phone">Phone Number:</label><br>
-        <input type="text" id="phone" name="phone" required><br><br>
-        <input type="submit" value="Submit">
-    </form>
-    <p>{{ message }}</p>
-    {% if contacts %}
-        <table border="1">
-            <tr>
-                <th>Name</th>
-                <th>Email</th> <!-- Added email table header -->
-                <th>Phone Number</th>
-                <th>Delete</th>
-            </tr>
-            {% for contact in contacts %}
-                <tr>
-                    <td>{{ contact['name'] }}</td>
-                    <td>{{ contact['email'] }}</td> <!-- Added email table data -->
-                    <td>{{ contact['phone'] }}</td>
-                    <td>
-                        <form method="POST" action="/">
-                            <input type="hidden" name="contact_id" value="{{ contact['id'] }}">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="submit" value="Delete">
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>No contacts found.</p>
-    {% endif %}
-</body>
-</html>
+        <html>
+        <head>
+            <title>Contacts</title>
+        </head>
+        <body>
+            <h2>Add Contact</h2>
+            <form method="POST" action="/">
+                <label for="name">Name:</label><br>
+                <input type="text" id="name" name="name" required><br>
+                <label for="email">Email Address:</label><br> <!-- Added email input field -->
+                <input type="email" id="email" name="email" required><br> <!-- Added email input field -->
+                <label for="phone">Phone Number:</label><br>
+                <input type="text" id="phone" name="phone" required><br><br>
+                <input type="submit" value="Submit">
+            </form>
+            <p>{{ message }}</p>
+            {% if contacts %}
+                <table border="1">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th> <!-- Added email table header -->
+                        <th>Phone Number</th>
+                        <th>Delete</th>
+                    </tr>
+                    {% for contact in contacts %}
+                        <tr>
+                            <td>{{ contact['name'] }}</td>
+                            <td>{{ contact['email'] }}</td> <!-- Added email table data -->
+                            <td>{{ contact['phone'] }}</td>
+                            <td>
+                                <form method="POST" action="/">
+                                    <input type="hidden" name="contact_id" value="{{ contact['id'] }}">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="submit" value="Delete">
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No contacts found.</p>
+            {% endif %}
+        </body>
+        </html>
     ''', message=message, contacts=contacts)
 
 if __name__ == "__main__":
